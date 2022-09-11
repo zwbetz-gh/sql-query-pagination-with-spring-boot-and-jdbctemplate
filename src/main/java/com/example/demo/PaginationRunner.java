@@ -21,7 +21,7 @@ public class PaginationRunner implements ApplicationRunner {
 
   Logger logger = LoggerFactory.getLogger(PaginationRunner.class);
 
-  @Value("${pagination_runner.page_size:10}")
+  @Value("${pagination_runner.page_size:5}")
   private int pageSize;
 
   @Autowired
