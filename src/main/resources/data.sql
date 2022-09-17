@@ -1,3 +1,6 @@
+-- When using the in-memory H2 database, this is how the data is seeded.
+-- I got this data by grepping for words starting with "b" in the built-in Mac dictionary at /usr/share/dict/words.
+
 INSERT INTO word (word) VALUES ('babblesome');
 INSERT INTO word (word) VALUES ('babbling');
 INSERT INTO word (word) VALUES ('babblingly');

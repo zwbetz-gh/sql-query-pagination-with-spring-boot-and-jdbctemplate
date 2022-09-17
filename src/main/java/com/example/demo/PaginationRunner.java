@@ -21,12 +21,24 @@ public class PaginationRunner implements ApplicationRunner {
 
   Logger logger = LoggerFactory.getLogger(PaginationRunner.class);
 
+  /**
+   * The pageSize is configurable. We default it to 5 here.
+   * You can override it in the src/main/resources/application.properties file by setting pagination_runner.page_size.
+   * Or, via env var by setting PAGINATION_RUNNER_PAGE_SIZE.
+   */
   @Value("${pagination_runner.page_size:5}")
   private int pageSize;
 
+  /**
+   * The jdbcTemplate uses the default data source. Which, in this demo, is the in-memory H2 database.
+   */
   @Autowired
   private JdbcTemplate jdbcTemplate;
 
+  /**
+   * This class implements ApplicationRunner.
+   * So, this component will run after the Spring Application Context is initialized.
+   */
   @Override
   public void run(ApplicationArguments args) throws Exception {
     logger.info("Starting PaginationRunner");
@@ -34,6 +46,9 @@ public class PaginationRunner implements ApplicationRunner {
     logger.info("Finished PaginationRunner");
   }
 
+  /**
+   * Loop through the pages until you encounter an empty page.
+   */
   private void loopThroughThePages() {
     Pageable pageable = PageRequest.of(0, pageSize);
     Page<Map<String, Object>> page = findAll(pageable);
@@ -46,6 +61,11 @@ public class PaginationRunner implements ApplicationRunner {
     }
   }
 
+  /**
+   * Find all the rows.
+   * You _could_ create the query using LIMIT and OFFSET...
+   * But, I went with a plain WHERE clause that selects a range of IDs because it's faster.
+   */
   private Page<Map<String, Object>> findAll(Pageable pageable) {
     long startId = pageable.getOffset();
     long endId = startId + pageable.getPageSize();
@@ -60,23 +80,35 @@ public class PaginationRunner implements ApplicationRunner {
     return new PageImpl<>(rows, pageable, total);
   }
 
+  /**
+   * Count all the rows.
+   */
   private long countAll() {
     String sql = "SELECT COUNT(*) FROM word";
     logger.info("countAll sql: {}", sql);
     return jdbcTemplate.queryForObject(sql, Long.class);
   }
 
+  /**
+   * Log the progress.
+   * You'll thank yourself for this, especially if the "job" is long-running.
+   */
   private void logProgress(Pageable pageable, Page<Map<String, Object>> page) {
     int currentPage = pageable.getPageNumber() + 1;
     int totalPages = page.getTotalPages();
     int currentRowCount = page.getNumberOfElements();
     long totalRowCount = page.getTotalElements();
     logger.info(
-        "On page {} of {}. Rows in this page: {}. Total rows: {}",
+        "On page {} of {}. Rows in page: {}. Total rows: {}",
         currentPage, totalPages, currentRowCount, totalRowCount
     );
   }
 
+  /**
+   * Actually do something with each row.
+   * In this demo, I'm just logging the row.
+   * In a real scenario, maybe you're building up a bulk request to send somewhere else, etc.
+   */
   private void handleRow(Map<String, Object> row) {
     logger.info(row.toString());
   }
